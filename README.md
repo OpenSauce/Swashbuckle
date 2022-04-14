@@ -1,2 +1,2 @@
 # Swashbuckle
-Golang 2D Game
+A 2D game written in Golang, using Ebiten.
