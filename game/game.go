@@ -43,10 +43,16 @@ func (g *Game) Update() error {
 	if ebiten.IsKeyPressed(ebiten.KeyArrowLeft) {
 		g.orientation--
 	}
+
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
+	g.RenderBackground(screen)
+	g.RenderPlayer(screen)
+}
+
+func (g *Game) RenderBackground(screen *ebiten.Image) {
 	for x := 0; x*g.tileSize <= g.screenWidth; x++ {
 		for y := 0; y*g.tileSize <= g.screenHeight; y++ {
 			op := &ebiten.DrawImageOptions{}
@@ -54,7 +60,9 @@ func (g *Game) Draw(screen *ebiten.Image) {
 			screen.DrawImage(g.bgImage, op)
 		}
 	}
+}
 
+func (g *Game) RenderPlayer(screen *ebiten.Image) {
 	w, h := g.boatImage.Size()
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(-float64(w)/2, -float64(h)/2)
@@ -65,7 +73,6 @@ func (g *Game) Draw(screen *ebiten.Image) {
 	)
 
 	screen.DrawImage(g.boatImage, op)
-
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
