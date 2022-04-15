@@ -12,11 +12,18 @@ type Game struct {
 	boatImage *ebiten.Image
 
 	tileSize     int
-	orientation  int
+	orientation  float64
 	charX        int
 	charY        int
 	screenWidth  int
 	screenHeight int
+	viewport
+}
+
+type viewport struct {
+	speed float64
+	x     int
+	y     int
 }
 
 func New() *Game {
@@ -36,13 +43,26 @@ func New() *Game {
 }
 
 func (g *Game) Update() error {
+	if g.speed > 0 {
+		g.speed -= 0.05
+	}
+
 	if ebiten.IsKeyPressed(ebiten.KeyArrowRight) {
-		g.orientation++
+		g.orientation += 2.0 * math.Pi / 180
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyArrowLeft) {
-		g.orientation--
+		g.orientation -= 2.0 * math.Pi / 180
 	}
+
+	if ebiten.IsKeyPressed(ebiten.KeyArrowUp) {
+		if g.speed < 10 {
+			g.speed += 0.2
+		}
+	}
+
+	g.x -= int(float64(g.speed) * math.Sin(g.orientation))
+	g.y += int(float64(g.speed) * math.Cos(g.orientation))
 
 	return nil
 }
@@ -53,10 +73,10 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 
 func (g *Game) RenderBackground(screen *ebiten.Image) {
-	for x := 0; x*g.tileSize <= g.screenWidth; x++ {
-		for y := 0; y*g.tileSize <= g.screenHeight; y++ {
+	for x := 0; x*g.tileSize <= g.screenWidth*20; x++ {
+		for y := 0; y*g.tileSize <= g.screenHeight*20; y++ {
 			op := &ebiten.DrawImageOptions{}
-			op.GeoM.Translate(float64(x*g.tileSize), float64(y*g.tileSize))
+			op.GeoM.Translate(float64((x*g.tileSize)-g.x), float64((y*g.tileSize)-g.y))
 			screen.DrawImage(g.bgImage, op)
 		}
 	}
@@ -66,7 +86,7 @@ func (g *Game) RenderPlayer(screen *ebiten.Image) {
 	w, h := g.boatImage.Size()
 	op := &ebiten.DrawImageOptions{}
 	op.GeoM.Translate(-float64(w)/2, -float64(h)/2)
-	op.GeoM.Rotate(float64(g.orientation%360) * 2 * math.Pi / 360)
+	op.GeoM.Rotate(g.orientation)
 	op.GeoM.Translate(
 		float64(g.screenWidth)/2.0,
 		float64(g.screenHeight)/2.0,
