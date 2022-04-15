@@ -61,8 +61,8 @@ func (g *Game) Update() error {
 		}
 	}
 
-	g.x -= int(float64(g.speed) * math.Sin(g.orientation))
-	g.y += int(float64(g.speed) * math.Cos(g.orientation))
+	g.x -= int(g.speed * math.Sin(g.orientation))
+	g.y += int(g.speed * math.Cos(g.orientation))
 
 	return nil
 }
