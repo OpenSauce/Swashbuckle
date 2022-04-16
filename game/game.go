@@ -3,7 +3,6 @@ package game
 import (
 	"math"
 
-	"github.com/OpenSauce/Swashbuckle/assets"
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
@@ -12,29 +11,13 @@ const (
 )
 
 type Game struct {
-	bgImage,
-	boatImage *ebiten.Image
-
-	p Player
+	levelData LevelData
 	GameData
 }
 
 func New() *Game {
-	bgImage := ebiten.NewImageFromImage(assets.Background())
-	boatImage := ebiten.NewImageFromImage(assets.Boat())
-
-	w, h := boatImage.Size()
-
 	return &Game{
-		bgImage:   bgImage,
-		boatImage: boatImage,
-
-		p: Player{
-			w: w,
-			h: h,
-			x: 0,
-			y: 0,
-		},
+		levelData: CreateLevelOne(),
 
 		GameData: GameData{
 			tileSize:     64,
@@ -45,26 +28,30 @@ func New() *Game {
 }
 
 func (g *Game) Update() error {
-	if g.p.speed > 0 {
-		g.p.speed -= 0.05
+	if g.levelData.p.speed > 0 {
+		g.levelData.p.speed -= 0.05
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyArrowRight) {
-		g.p.a += 2.0 * math.Pi / 180
+		g.levelData.p.a += 2.0 * math.Pi / 180
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyArrowLeft) {
-		g.p.a -= 2.0 * math.Pi / 180
+		g.levelData.p.a -= 2.0 * math.Pi / 180
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyArrowUp) {
-		if g.p.speed < MAX_SPEED {
-			g.p.speed += 0.2
+		if g.levelData.p.speed < MAX_SPEED {
+			g.levelData.p.speed += 0.2
 		}
 	}
 
-	g.p.x -= int(g.p.speed * math.Sin(g.p.a))
-	g.p.y += int(g.p.speed * math.Cos(g.p.a))
+	if ebiten.IsKeyPressed(ebiten.KeySpace) {
+		g.levelData = CreateLevelTwo()
+	}
+
+	g.levelData.p.x -= int(g.levelData.p.speed * math.Sin(g.levelData.p.a))
+	g.levelData.p.y += int(g.levelData.p.speed * math.Cos(g.levelData.p.a))
 
 	return nil
 }
@@ -78,8 +65,8 @@ func (g *Game) renderBackground(screen *ebiten.Image) {
 	for x := 0; x*g.tileSize <= g.ScreenWidth*5; x++ {
 		for y := 0; y*g.tileSize <= g.ScreenHeight*5; y++ {
 			op := &ebiten.DrawImageOptions{}
-			op.GeoM.Translate(float64((x*g.tileSize)-g.p.x), float64((y*g.tileSize)-g.p.y))
-			screen.DrawImage(g.bgImage, op)
+			op.GeoM.Translate(float64((x*g.tileSize)-g.levelData.p.x), float64((y*g.tileSize)-g.levelData.p.y))
+			screen.DrawImage(g.levelData.bg, op)
 		}
 	}
 }
@@ -87,14 +74,14 @@ func (g *Game) renderBackground(screen *ebiten.Image) {
 // Render
 func (g *Game) renderPlayer(screen *ebiten.Image) {
 	op := &ebiten.DrawImageOptions{}
-	op.GeoM.Translate(-float64(g.p.w)/2, -float64(g.p.h)/2)
-	op.GeoM.Rotate(g.p.a)
+	op.GeoM.Translate(-float64(g.levelData.p.w)/2, -float64(g.levelData.p.h)/2)
+	op.GeoM.Rotate(g.levelData.p.a)
 	op.GeoM.Translate(
 		float64(g.ScreenWidth)/2.0,
 		float64(g.ScreenHeight)/2.0,
 	)
 
-	screen.DrawImage(g.boatImage, op)
+	screen.DrawImage(g.levelData.p.image, op)
 }
 
 func (g *Game) Layout(outsideWidth, outsideHeight int) (screenWidth, screenHeight int) {
