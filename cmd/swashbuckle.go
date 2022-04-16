@@ -8,9 +8,10 @@ import (
 const gameName = "Swashbuckle"
 
 func main() {
-	ebiten.SetWindowSize(640, 480)
+	ebiten.SetFullscreen(true)
 	ebiten.SetWindowTitle(gameName)
 	game := game.New()
+	game.ScreenWidth, game.ScreenHeight = ebiten.ScreenSizeInFullscreen()
 	if err := ebiten.RunGame(game); err != nil {
 		panic(err)
 	}
