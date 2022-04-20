@@ -6,8 +6,11 @@ import (
 	"log"
 	"math"
 
+	"github.com/OpenSauce/Swashbuckle/assets"
 	"github.com/hajimehoshi/ebiten/examples/resources/fonts"
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/audio"
+	"github.com/hajimehoshi/ebiten/v2/audio/mp3"
 	"github.com/hajimehoshi/ebiten/v2/text"
 	"golang.org/x/image/font"
 	"golang.org/x/image/font/opentype"
@@ -24,6 +27,7 @@ var (
 type Game struct {
 	levelData LevelData
 	GameData
+	audioContext audio.Context
 }
 
 func New() *Game {
@@ -41,6 +45,22 @@ func New() *Game {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	audioContext := audio.NewContext(44100)
+
+	d, err := mp3.DecodeWithSampleRate(44100, assets.LoadMusic())
+	if err != nil {
+		log.Fatal("Error loading music")
+	}
+
+	p, err := audioContext.NewPlayer(d)
+	if err != nil {
+		log.Fatal("Error loading music")
+	}
+
+	p.SetVolume(0.2)
+
+	p.Play()
 
 	return &Game{
 		levelData: CreateLevelOne(),
@@ -98,7 +118,7 @@ func (g *Game) renderBackground(screen *ebiten.Image) {
 			tileXI := tileX + x
 			tileYI := tileY + y
 
-			if tileXI < 0 || tileYI < 0 || tileXI >= len(g.levelData.layout) || tileYI >= len(g.levelData.layout[0]) {
+			if tileXI < 0 || tileYI < 0 || tileXI >= len(g.levelData.layout) || tileYI >= len(g.levelData.layout[tileXI]) {
 				continue
 			}
 
