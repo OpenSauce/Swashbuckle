@@ -5,24 +5,38 @@ import (
 	"github.com/hajimehoshi/ebiten/v2"
 )
 
+type LevelData struct {
+	layout [][]MapTile
+	p      Player
+}
+
 func CreateLevelOne() LevelData {
 	layout := CreateLevelOneLayout()
 	playerImage := ebiten.NewImageFromImage(assets.Boat())
-	bgImage := ebiten.NewImageFromImage(assets.Background())
 	w, h := playerImage.Size()
 	return LevelData{
 		layout: layout,
-		bg:     bgImage,
 		p: Player{
 			image: playerImage,
 			w:     w,
 			h:     h,
-			x:     0,
-			y:     0,
+			x:     1000,
+			y:     1000,
 		},
 	}
 }
 
-func CreateLevelOneLayout() []MapTile {
-	return []MapTile{}
+func CreateLevelOneLayout() [][]MapTile {
+	layout := [][]MapTile{}
+	bgImage := ebiten.NewImageFromImage(assets.Background())
+	for x := 0; x < 2000; x++ {
+		layout = append(layout, []MapTile{})
+		for y := 0; y < 2000; y++{
+			layout[x] = append(layout[x], MapTile{
+				img: bgImage,
+			})
+		}
+	}
+
+	return layout
 }

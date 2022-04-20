@@ -1,13 +1,24 @@
 package game
 
 import (
+	"fmt"
+	"image/color"
+	"log"
 	"math"
 
+	"github.com/hajimehoshi/ebiten/examples/resources/fonts"
 	"github.com/hajimehoshi/ebiten/v2"
+	"github.com/hajimehoshi/ebiten/v2/text"
+	"golang.org/x/image/font"
+	"golang.org/x/image/font/opentype"
 )
 
 const (
 	MAX_SPEED = 10.0
+)
+
+var (
+	gameFont font.Face
 )
 
 type Game struct {
@@ -16,6 +27,21 @@ type Game struct {
 }
 
 func New() *Game {
+	tt, err := opentype.Parse(fonts.MPlus1pRegular_ttf)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	const dpi = 72
+	gameFont, err = opentype.NewFace(tt, &opentype.FaceOptions{
+		Size:    24,
+		DPI:     dpi,
+		Hinting: font.HintingFull,
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+
 	return &Game{
 		levelData: CreateLevelOne(),
 
@@ -62,11 +88,26 @@ func (g *Game) Draw(screen *ebiten.Image) {
 }
 
 func (g *Game) renderBackground(screen *ebiten.Image) {
-	for x := 0; x*g.tileSize <= g.ScreenWidth*5; x++ {
-		for y := 0; y*g.tileSize <= g.ScreenHeight*5; y++ {
+	startingXPos := g.levelData.p.x - g.ScreenWidth/2
+	startingYPos := g.levelData.p.y - g.ScreenHeight/2
+	tileX := startingXPos / g.tileSize
+	tileY := startingYPos / g.tileSize
+
+	for x := 0; x*g.tileSize <= g.ScreenWidth; x++ {
+		for y := 0; y*g.tileSize <= g.ScreenHeight+g.tileSize; y++ {
+			tileXI := tileX + x
+			tileYI := tileY + y
+
+			if tileXI < 0 || tileYI < 0 || tileXI >= len(g.levelData.layout) || tileYI >= len(g.levelData.layout[0]) {
+				continue
+			}
+
+			tile := g.levelData.layout[tileXI][tileYI]
 			op := &ebiten.DrawImageOptions{}
-			op.GeoM.Translate(float64((x*g.tileSize)-g.levelData.p.x), float64((y*g.tileSize)-g.levelData.p.y))
-			screen.DrawImage(g.levelData.bg, op)
+			op.GeoM.Translate(float64(x*g.tileSize-startingXPos%g.tileSize), float64(y*g.tileSize-startingYPos%g.tileSize))
+			screen.DrawImage(tile.img, op)
+			text.Draw(screen, fmt.Sprintf("Pos: %v %v Start: %v %v Tile: %v %v",
+				g.levelData.p.x, g.levelData.p.y, startingXPos, startingYPos, tileX, tileY), gameFont, 20, 20, color.White)
 		}
 	}
 }
