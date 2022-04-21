@@ -27,7 +27,6 @@ var (
 type Game struct {
 	levelData LevelData
 	GameData
-	audioContext audio.Context
 }
 
 func New() *Game {
@@ -94,6 +93,13 @@ func (g *Game) Update() error {
 
 	if ebiten.IsKeyPressed(ebiten.KeySpace) {
 		g.levelData = CreateLevelTwo()
+	}
+
+	newXPos := g.levelData.p.x - int(g.levelData.p.speed*math.Sin(g.levelData.p.a))
+	newYPos := g.levelData.p.y + int(g.levelData.p.speed*math.Cos(g.levelData.p.a))
+
+	if g.levelData.layout[newXPos/g.tileSize][newYPos/g.tileSize].blocking {
+		return nil
 	}
 
 	g.levelData.p.x -= int(g.levelData.p.speed * math.Sin(g.levelData.p.a))
