@@ -17,7 +17,10 @@ import (
 )
 
 const (
-	MAX_SPEED = 10.0
+	MAX_SPEED    = 10.0
+	TURN_SPEED   = 2.0
+	ACCELERATION = 0.2
+	DECELERATION = 0.05
 )
 
 var (
@@ -74,20 +77,20 @@ func New() *Game {
 
 func (g *Game) Update() error {
 	if g.levelData.p.speed > 0 {
-		g.levelData.p.speed -= 0.05
+		g.levelData.p.speed -= DECELERATION
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyArrowRight) {
-		g.levelData.p.a += 2.0 * math.Pi / 180
+		g.levelData.p.a += TURN_SPEED * math.Pi / 180
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyArrowLeft) {
-		g.levelData.p.a -= 2.0 * math.Pi / 180
+		g.levelData.p.a -= TURN_SPEED * math.Pi / 180
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyArrowUp) {
 		if g.levelData.p.speed < MAX_SPEED {
-			g.levelData.p.speed += 0.2
+			g.levelData.p.speed += ACCELERATION
 		}
 	}
 
@@ -98,12 +101,12 @@ func (g *Game) Update() error {
 	newXPos := g.levelData.p.x - int(g.levelData.p.speed*math.Sin(g.levelData.p.a))
 	newYPos := g.levelData.p.y + int(g.levelData.p.speed*math.Cos(g.levelData.p.a))
 
-	if g.levelData.layout[newXPos/g.tileSize][newYPos/g.tileSize].blocking {
+	if g.levelData.layout[1][newXPos/g.tileSize][newYPos/g.tileSize].blocking {
 		return nil
 	}
 
-	g.levelData.p.x -= int(g.levelData.p.speed * math.Sin(g.levelData.p.a))
-	g.levelData.p.y += int(g.levelData.p.speed * math.Cos(g.levelData.p.a))
+	g.levelData.p.x = newXPos
+	g.levelData.p.y = newYPos
 
 	return nil
 }
@@ -119,21 +122,27 @@ func (g *Game) renderBackground(screen *ebiten.Image) {
 	tileX := startingXPos / g.tileSize
 	tileY := startingYPos / g.tileSize
 
-	for x := 0; x*g.tileSize <= g.ScreenWidth; x++ {
-		for y := 0; y*g.tileSize <= g.ScreenHeight+g.tileSize; y++ {
-			tileXI := tileX + x
-			tileYI := tileY + y
+	for l := 0; l < len(g.levelData.layout); l++ {
+		for x := 0; x*g.tileSize <= g.ScreenWidth; x++ {
+			for y := 0; y*g.tileSize <= g.ScreenHeight+g.tileSize; y++ {
+				tileXI := tileX + x
+				tileYI := tileY + y
 
-			if tileXI < 0 || tileYI < 0 || tileXI >= len(g.levelData.layout) || tileYI >= len(g.levelData.layout[tileXI]) {
-				continue
+				if tileXI < 0 || tileYI < 0 || tileXI >= len(g.levelData.layout[l]) || tileYI >= len(g.levelData.layout[l][tileXI]) {
+					continue
+				}
+
+				tile := g.levelData.layout[l][tileXI][tileYI]
+
+				if tile.img == nil {
+					continue
+				}
+				op := &ebiten.DrawImageOptions{}
+				op.GeoM.Translate(float64(x*g.tileSize-startingXPos%g.tileSize), float64(y*g.tileSize-startingYPos%g.tileSize))
+				screen.DrawImage(tile.img, op)
+				text.Draw(screen, fmt.Sprintf("Pos: %v %v Start: %v %v Tile: %v %v",
+					g.levelData.p.x, g.levelData.p.y, startingXPos, startingYPos, tileX, tileY), gameFont, 20, 20, color.White)
 			}
-
-			tile := g.levelData.layout[tileXI][tileYI]
-			op := &ebiten.DrawImageOptions{}
-			op.GeoM.Translate(float64(x*g.tileSize-startingXPos%g.tileSize), float64(y*g.tileSize-startingYPos%g.tileSize))
-			screen.DrawImage(tile.img, op)
-			text.Draw(screen, fmt.Sprintf("Pos: %v %v Start: %v %v Tile: %v %v",
-				g.levelData.p.x, g.levelData.p.y, startingXPos, startingYPos, tileX, tileY), gameFont, 20, 20, color.White)
 		}
 	}
 }

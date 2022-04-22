@@ -6,7 +6,7 @@ import (
 )
 
 type LevelData struct {
-	layout [][]MapTile
+	layout [][][]MapTile
 	p      Player
 }
 
@@ -33,13 +33,13 @@ func CreateLevelOne() LevelData {
 	}
 }
 
-func CreateLevelOneLayout() [][]MapTile {
+func CreateLevelOneLayout() [][][]MapTile {
 	layout := GenerateGrid(2000, 2000)
 	return layout
 }
 
-func GenerateGrid(maxX, maxY int) [][]MapTile {
-	layout := [][]MapTile{}
+func GenerateGrid(maxX, maxY int) [][][]MapTile {
+	layout := [][][]MapTile{}
 	bgImage := ebiten.NewImageFromImage(assets.Background())
 	topLeft := ebiten.NewImageFromImage(assets.TopLeftWall())
 	topRight := ebiten.NewImageFromImage(assets.TopRightWall())
@@ -47,11 +47,25 @@ func GenerateGrid(maxX, maxY int) [][]MapTile {
 	bottomRight := ebiten.NewImageFromImage(assets.BottomRightWall())
 	XWall := ebiten.NewImageFromImage(assets.XWall())
 	YWall := ebiten.NewImageFromImage(assets.YWall())
+
+	layout = append(layout, [][]MapTile{})
+
 	for x := 0; x < maxX; x++ {
-		layout = append(layout, []MapTile{})
+		layout[0] = append(layout[0], []MapTile{})
+		for y := 0; y < maxY; y++ {
+			layout[0][x] = append(layout[0][x], MapTile{
+				img: bgImage,
+			})
+		}
+	}
+
+	layout = append(layout, [][]MapTile{})
+
+	for x := 0; x < maxX; x++ {
+		layout[1] = append(layout[1], []MapTile{})
 		for y := 0; y < maxY; y++ {
 			if x == 0 && y == 0 {
-				layout[x] = append(layout[x], MapTile{
+				layout[1][x] = append(layout[1][x], MapTile{
 					blocking: true,
 					img:      topLeft,
 				})
@@ -59,7 +73,7 @@ func GenerateGrid(maxX, maxY int) [][]MapTile {
 			}
 
 			if x == 0 && y == maxX-1 {
-				layout[x] = append(layout[x], MapTile{
+				layout[1][x] = append(layout[1][x], MapTile{
 					blocking: true,
 					img:      topRight,
 				})
@@ -67,7 +81,7 @@ func GenerateGrid(maxX, maxY int) [][]MapTile {
 			}
 
 			if x == maxX-1 && y == 0 {
-				layout[x] = append(layout[x], MapTile{
+				layout[1][x] = append(layout[1][x], MapTile{
 					blocking: true,
 					img:      bottomLeft,
 				})
@@ -75,7 +89,7 @@ func GenerateGrid(maxX, maxY int) [][]MapTile {
 			}
 
 			if x == maxX-1 && y == maxX-1 {
-				layout[x] = append(layout[x], MapTile{
+				layout[1][x] = append(layout[1][x], MapTile{
 					blocking: true,
 					img:      bottomRight,
 				})
@@ -83,7 +97,7 @@ func GenerateGrid(maxX, maxY int) [][]MapTile {
 			}
 
 			if x == 0 || x == maxX-1 {
-				layout[x] = append(layout[x], MapTile{
+				layout[1][x] = append(layout[1][x], MapTile{
 					blocking: true,
 					img:      YWall,
 				})
@@ -91,16 +105,14 @@ func GenerateGrid(maxX, maxY int) [][]MapTile {
 			}
 
 			if y == 0 || y == maxX-1 {
-				layout[x] = append(layout[x], MapTile{
+				layout[1][x] = append(layout[1][x], MapTile{
 					blocking: true,
 					img:      XWall,
 				})
 				continue
 			}
 
-			layout[x] = append(layout[x], MapTile{
-				img: bgImage,
-			})
+			layout[1][x] = append(layout[1][x], MapTile{})
 
 		}
 
