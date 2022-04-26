@@ -6,8 +6,9 @@ import (
 )
 
 type LevelData struct {
-	layout [][][]MapTile
-	p      Player
+	layout  [][][]MapTile
+	powerup []Powerup
+	p       Player
 }
 
 type MapTile struct {
@@ -20,15 +21,31 @@ type MapTile struct {
 func CreateLevelOne() LevelData {
 	layout := CreateLevelOneLayout()
 	playerImage := ebiten.NewImageFromImage(assets.Boat())
-	w, h := playerImage.Size()
-	return LevelData{
-		layout: layout,
-		p: Player{
-			image: playerImage,
+	turnPowerup := ebiten.NewImageFromImage(assets.TurnPowerup())
+
+	w, h := turnPowerup.Size()
+	var powerups []Powerup
+	for i := 0; i < 3; i++ {
+		powerups = append(powerups, Powerup{
+			image: turnPowerup,
+			x:     1200 * i,
+			y:     1200 * i,
 			w:     w,
 			h:     h,
-			x:     1000,
-			y:     1000,
+		})
+	}
+
+	w, h = playerImage.Size()
+	return LevelData{
+		layout:  layout,
+		powerup: powerups,
+		p: Player{
+			turnSpeed: 2.0,
+			image:     playerImage,
+			w:         w,
+			h:         h,
+			x:         1000,
+			y:         1000,
 		},
 	}
 }

@@ -3,11 +3,12 @@ package game
 import "github.com/hajimehoshi/ebiten/v2"
 
 type Player struct {
-	image *ebiten.Image
-	speed float64
-	a     float64
-	w     int
-	h     int
-	x     int
-	y     int
+	turnSpeed float64
+	image     *ebiten.Image
+	speed     float64
+	a         float64
+	w         int
+	h         int
+	x         int
+	y         int
 }

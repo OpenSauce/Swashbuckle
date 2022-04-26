@@ -5,6 +5,7 @@ import (
 	"image/color"
 	"log"
 	"math"
+	"time"
 
 	"github.com/OpenSauce/Swashbuckle/assets"
 	"github.com/hajimehoshi/ebiten/examples/resources/fonts"
@@ -18,18 +19,29 @@ import (
 
 const (
 	MAX_SPEED    = 10.0
-	TURN_SPEED   = 2.0
 	ACCELERATION = 0.2
 	DECELERATION = 0.05
 )
 
 var (
 	gameFont font.Face
+	msg      chan struct{}
 )
+
+type Powerup struct {
+	image *ebiten.Image
+	speed float64
+	a     float64
+	w     int
+	h     int
+	x     int
+	y     int
+}
 
 type Game struct {
 	levelData LevelData
 	GameData
+	powerups []Powerup
 }
 
 func New() *Game {
@@ -49,6 +61,7 @@ func New() *Game {
 	}
 
 	audioContext := audio.NewContext(44100)
+	msg = make(chan struct{})
 
 	d, err := mp3.DecodeWithSampleRate(44100, assets.LoadMusic())
 	if err != nil {
@@ -81,11 +94,11 @@ func (g *Game) Update() error {
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyArrowRight) {
-		g.levelData.p.a += TURN_SPEED * math.Pi / 180
+		g.levelData.p.a += g.levelData.p.turnSpeed * math.Pi / 180
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyArrowLeft) {
-		g.levelData.p.a -= TURN_SPEED * math.Pi / 180
+		g.levelData.p.a -= g.levelData.p.turnSpeed * math.Pi / 180
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyArrowUp) {
@@ -108,12 +121,44 @@ func (g *Game) Update() error {
 	g.levelData.p.x = newXPos
 	g.levelData.p.y = newYPos
 
+	for i, powerup := range g.levelData.powerup {
+		if g.levelData.p.x < powerup.x+powerup.w &&
+			g.levelData.p.x+g.levelData.p.w > powerup.x &&
+			g.levelData.p.y < powerup.y+powerup.h &&
+			g.levelData.p.h+g.levelData.p.y > powerup.y {
+			g.levelData.powerup = append(g.levelData.powerup[:i], g.levelData.powerup[i+1:]...)
+			g.levelData.p.turnSpeed = 3.0
+
+			go func() {
+				time.Sleep(5 * time.Second)
+				msg <- struct{}{}
+			}()
+		}
+	}
+
+	select {
+	case <-msg:
+		g.levelData.p.turnSpeed = 2.0
+	default:
+	}
+
 	return nil
 }
 
 func (g *Game) Draw(screen *ebiten.Image) {
 	g.renderBackground(screen)
 	g.renderPlayer(screen)
+	g.renderMisc(screen)
+}
+
+func (g *Game) renderMisc(screen *ebiten.Image) {
+	startingXPos := g.levelData.p.x - g.ScreenWidth/2
+	startingYPos := g.levelData.p.y - g.ScreenHeight/2
+	for _, powerup := range g.levelData.powerup {
+		op := &ebiten.DrawImageOptions{}
+		op.GeoM.Translate(float64(powerup.x-startingXPos), float64(powerup.y-startingYPos))
+		screen.DrawImage(powerup.image, op)
+	}
 }
 
 func (g *Game) renderBackground(screen *ebiten.Image) {
@@ -145,6 +190,7 @@ func (g *Game) renderBackground(screen *ebiten.Image) {
 			}
 		}
 	}
+
 }
 
 // Render

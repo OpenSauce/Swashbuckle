@@ -38,6 +38,9 @@ var xWall []byte
 //go:embed images/textures/walls/ywall.png
 var yWall []byte
 
+//go:embed images/powerups/turn.png
+var turn []byte
+
 func Background() image.Image {
 	img, err := png.Decode(bytes.NewReader(bg))
 	if err != nil {
@@ -104,6 +107,14 @@ func XWall() image.Image {
 
 func YWall() image.Image {
 	img, err := png.Decode(bytes.NewReader(yWall))
+	if err != nil {
+		log.Fatal(err)
+	}
+	return img
+}
+
+func TurnPowerup() image.Image {
+	img, err := png.Decode(bytes.NewReader(turn))
 	if err != nil {
 		log.Fatal(err)
 	}
