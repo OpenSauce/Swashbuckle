@@ -127,7 +127,7 @@ func (g *Game) Update() error {
 			g.levelData.p.y < powerup.y+powerup.h &&
 			g.levelData.p.h+g.levelData.p.y > powerup.y {
 			g.levelData.powerup = append(g.levelData.powerup[:i], g.levelData.powerup[i+1:]...)
-			g.levelData.p.turnSpeed = 3.0
+			g.levelData.p.turnSpeed = 10.0
 
 			go func() {
 				time.Sleep(5 * time.Second)
@@ -186,10 +186,12 @@ func (g *Game) renderBackground(screen *ebiten.Image) {
 				op.GeoM.Translate(float64(x*g.tileSize-startingXPos%g.tileSize), float64(y*g.tileSize-startingYPos%g.tileSize))
 				screen.DrawImage(tile.img, op)
 				text.Draw(screen, fmt.Sprintf("Pos: %v %v Start: %v %v Tile: %v %v",
-					g.levelData.p.x, g.levelData.p.y, startingXPos, startingYPos, tileX, tileY), gameFont, 20, 20, color.White)
+					g.levelData.p.x, g.levelData.p.y, startingXPos, startingYPos, tileX, tileY), gameFont, 20, 20, color.Black)
 			}
 		}
 	}
+
+	text.Draw(screen, fmt.Sprintf("%f", ebiten.CurrentFPS()), gameFont, g.ScreenWidth-200, 20, color.Black)
 
 }
 
