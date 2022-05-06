@@ -18,7 +18,6 @@ import (
 )
 
 const (
-	MAX_SPEED    = 10.0
 	ACCELERATION = 0.2
 	DECELERATION = 0.05
 )
@@ -103,7 +102,7 @@ func (g *Game) Update() error {
 	}
 
 	if ebiten.IsKeyPressed(ebiten.KeyArrowUp) {
-		if g.levelData.p.speed < MAX_SPEED {
+		if g.levelData.p.speed < g.levelData.p.MaxSpeed {
 			g.levelData.p.speed += ACCELERATION
 		}
 	}
@@ -128,8 +127,12 @@ func (g *Game) Update() error {
 			g.levelData.p.y < powerup.y+powerup.h &&
 			g.levelData.p.h+g.levelData.p.y > powerup.y {
 			g.levelData.powerup = append(g.levelData.powerup[:i], g.levelData.powerup[i+1:]...)
-
-			g.levelData.p.turnSpeed = 10.0
+			switch powerup.powerupType {
+			case 0:
+				g.levelData.p.turnSpeed = 10.0
+			case 1:
+				g.levelData.p.MaxSpeed = 20.0
+			}
 
 			go func() {
 				time.Sleep(5 * time.Second)
@@ -141,6 +144,7 @@ func (g *Game) Update() error {
 	select {
 	case <-msg:
 		g.levelData.p.turnSpeed = 2.0
+		g.levelData.p.MaxSpeed = 20.0
 	default:
 	}
 

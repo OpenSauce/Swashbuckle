@@ -30,15 +30,17 @@ func CreateLevelOne() LevelData {
 
 	w, h := powerupLookup[0].Size()
 	var powerups []Powerup
-	for i := 0; i < 3; i++ {
+	for i := 0; i < 5000; i++ {
 
-		powerupType := rand.Intn(1)
+		powerupType := rand.Intn(2)
+		x := rand.Intn(2000*64-50) + 50
+		y := rand.Intn(2000*64-50) + 50
 
 		powerups = append(powerups, Powerup{
 			powerupType: powerupType,
 			image:       powerupLookup[powerupType],
-			x:           1200 * i,
-			y:           1200 * i,
+			x:           x,
+			y:           y,
 			w:           w,
 			h:           h,
 		})
@@ -50,6 +52,7 @@ func CreateLevelOne() LevelData {
 		powerup: powerups,
 		p: Player{
 			turnSpeed: 2.0,
+			MaxSpeed:  10.0,
 			image:     playerImage,
 			w:         w,
 			h:         h,
