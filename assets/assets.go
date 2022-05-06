@@ -41,6 +41,9 @@ var yWall []byte
 //go:embed images/powerups/turn.png
 var turn []byte
 
+//go:embed images/powerups/speed.png
+var speed []byte
+
 func Background() image.Image {
 	img, err := png.Decode(bytes.NewReader(bg))
 	if err != nil {
@@ -115,6 +118,14 @@ func YWall() image.Image {
 
 func TurnPowerup() image.Image {
 	img, err := png.Decode(bytes.NewReader(turn))
+	if err != nil {
+		log.Fatal(err)
+	}
+	return img
+}
+
+func SpeedPowerup() image.Image {
+	img, err := png.Decode(bytes.NewReader(speed))
 	if err != nil {
 		log.Fatal(err)
 	}

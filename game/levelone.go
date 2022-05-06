@@ -1,6 +1,8 @@
 package game
 
 import (
+	"math/rand"
+
 	"github.com/OpenSauce/Swashbuckle/assets"
 	"github.com/hajimehoshi/ebiten/v2"
 )
@@ -21,17 +23,24 @@ type MapTile struct {
 func CreateLevelOne() LevelData {
 	layout := CreateLevelOneLayout()
 	playerImage := ebiten.NewImageFromImage(assets.Boat())
-	turnPowerup := ebiten.NewImageFromImage(assets.TurnPowerup())
+	powerupLookup := map[int]*ebiten.Image{
+		0: ebiten.NewImageFromImage(assets.TurnPowerup()),
+		1: ebiten.NewImageFromImage(assets.SpeedPowerup()),
+	}
 
-	w, h := turnPowerup.Size()
+	w, h := powerupLookup[0].Size()
 	var powerups []Powerup
 	for i := 0; i < 3; i++ {
+
+		powerupType := rand.Intn(1)
+
 		powerups = append(powerups, Powerup{
-			image: turnPowerup,
-			x:     1200 * i,
-			y:     1200 * i,
-			w:     w,
-			h:     h,
+			powerupType: powerupType,
+			image:       powerupLookup[powerupType],
+			x:           1200 * i,
+			y:           1200 * i,
+			w:           w,
+			h:           h,
 		})
 	}
 

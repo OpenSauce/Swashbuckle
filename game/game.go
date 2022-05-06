@@ -29,13 +29,14 @@ var (
 )
 
 type Powerup struct {
-	image *ebiten.Image
-	speed float64
-	a     float64
-	w     int
-	h     int
-	x     int
-	y     int
+	image       *ebiten.Image
+	powerupType int
+	speed       float64
+	a           float64
+	w           int
+	h           int
+	x           int
+	y           int
 }
 
 type Game struct {
@@ -127,6 +128,7 @@ func (g *Game) Update() error {
 			g.levelData.p.y < powerup.y+powerup.h &&
 			g.levelData.p.h+g.levelData.p.y > powerup.y {
 			g.levelData.powerup = append(g.levelData.powerup[:i], g.levelData.powerup[i+1:]...)
+
 			g.levelData.p.turnSpeed = 10.0
 
 			go func() {
